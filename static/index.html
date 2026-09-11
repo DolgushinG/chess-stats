@@ -66,27 +66,43 @@
     <div id="errorBox" class="alert alert-danger" role="alert" hidden></div>
 
     <div id="results" hidden>
-      <section id="profileSection" class="mb-4"></section>
-      <section id="ratingSection" class="mb-4"></section>
-      <section id="summarySection" class="mb-4"></section>
-      <section id="compareSection" class="mb-4"></section>
-      <section id="tacticsSection" class="mb-4"></section>
-      <section id="overviewSection" class="mb-4"></section>
-      <section id="formSection" class="mb-4"></section>
-      <section id="volumeSection" class="mb-4"></section>
-      <section id="bestTimeSection" class="mb-4"></section>
-      <section id="weaknessSection" class="mb-4"></section>
-      <section id="strongPointsSection" class="mb-4"></section>
-      <section id="stagesSection" class="mb-4"></section>
-      <section id="strengthSection" class="mb-4"></section>
-      <section id="openingsSection" class="mb-4"></section>
-      <section id="repertoireSection" class="mb-4"></section>
-      <section id="adviceSection" class="mb-4"></section>
-      <section id="timeSection" class="mb-4"></section>
-      <section id="opponentsSection" class="mb-4"></section>
-      <section id="lostSection" class="mb-4"></section>
-      <section id="recentSection" class="mb-4"></section>
-      <section id="bestGamesSection" class="mb-4"></section>
+      <ul class="nav nav-tabs mb-3" id="resultsTabs" role="tablist">
+        <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-overview" type="button" role="tab">📊 Обзор</button></li>
+        <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-openings" type="button" role="tab">♟ Дебюты</button></li>
+        <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-opponents" type="button" role="tab">👥 Соперники</button></li>
+        <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-games" type="button" role="tab">📜 Партии и время</button></li>
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane fade show active" id="tab-overview" role="tabpanel">
+          <section id="profileSection" class="mb-4"></section>
+          <section id="ratingSection" class="mb-4"></section>
+          <section id="summarySection" class="mb-4"></section>
+          <section id="compareSection" class="mb-4"></section>
+          <section id="tacticsSection" class="mb-4"></section>
+          <section id="overviewSection" class="mb-4"></section>
+          <section id="formSection" class="mb-4"></section>
+          <section id="stagesSection" class="mb-4"></section>
+        </div>
+        <div class="tab-pane fade" id="tab-openings" role="tabpanel">
+          <section id="weaknessSection" class="mb-4"></section>
+          <section id="strongPointsSection" class="mb-4"></section>
+          <section id="openingsSection" class="mb-4"></section>
+          <section id="repertoireSection" class="mb-4"></section>
+          <section id="adviceSection" class="mb-4"></section>
+        </div>
+        <div class="tab-pane fade" id="tab-opponents" role="tabpanel">
+          <section id="strengthSection" class="mb-4"></section>
+          <section id="opponentsSection" class="mb-4"></section>
+          <section id="lostSection" class="mb-4"></section>
+        </div>
+        <div class="tab-pane fade" id="tab-games" role="tabpanel">
+          <section id="timeSection" class="mb-4"></section>
+          <section id="volumeSection" class="mb-4"></section>
+          <section id="bestTimeSection" class="mb-4"></section>
+          <section id="recentSection" class="mb-4"></section>
+          <section id="bestGamesSection" class="mb-4"></section>
+        </div>
+      </div>
     </div>
 
   </main>

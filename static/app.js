@@ -1136,6 +1136,14 @@ function renderSummary(analysis) {
   const totalScore = scoreOf(a.wins, a.losses, a.draws);
   s.push('За всё время ' + nf.format(a.total) + ' партий — ' + nf.format(a.wins) + ' побед, ' + nf.format(a.losses) + ' поражений и ' + nf.format(a.draws) + ' ничьих (' + (totalScore || '—') + '% очков).');
 
+  // регистрация + активность
+  const joined = a.profile && a.profile.joined;
+  if (joined) {
+    const monthsSince = (Date.now() / 1000 - joined) / (30.44 * 24 * 3600);
+    const gpm = monthsSince > 0 ? Math.round(a.total / monthsSince) : null;
+    s.push('Зарегистрирован ' + fmtDate(joined) + (gpm != null ? ' — в среднем ' + nf.format(gpm) + ' партий в месяц.' : '.'));
+  }
+
   // цвет
   const wScore = scoreOf(a.asWhite.win, a.asWhite.loss, a.asWhite.draw);
   const bScore = scoreOf(a.asBlack.win, a.asBlack.loss, a.asBlack.draw);
@@ -1315,6 +1323,13 @@ function renderCompare(analysis) {
         const cs = a.currentStreak || {};
         return cs.type === 'win' ? cs.len + ' побед' : cs.type === 'loss' ? cs.len + ' поражений' : '—';
       };
+      const joinedOf = (a) => (a.profile && a.profile.joined) || null;
+      const gpmOf = (a) => {
+        const j = joinedOf(a);
+        if (!j || !a.total) return null;
+        const m = (Date.now() / 1000 - j) / (30.44 * 24 * 3600);
+        return m > 0 ? Math.round(a.total / m) : null;
+      };
 
       const meStage = stageOf(me), opStage = stageOf(op);
       const meBest = bestOpening(me), opBest = bestOpening(op);
@@ -1323,6 +1338,8 @@ function renderCompare(analysis) {
       const rows = [
         ['Рейтинг (рапид)', rapidOf(me) != null ? nf.format(rapidOf(me)) : '—', rapidOf(op) != null ? nf.format(rapidOf(op)) : '—'],
         ['Всего партий', nf.format(me.total), nf.format(op.total)],
+        ['Регистрация', joinedOf(me) ? fmtDate(joinedOf(me)) : '—', joinedOf(op) ? fmtDate(joinedOf(op)) : '—'],
+        ['Партий в месяц', gpmOf(me) != null ? nf.format(gpmOf(me)) : '—', gpmOf(op) != null ? nf.format(gpmOf(op)) : '—'],
         ['Очки', p(scoreOf(me.wins, me.losses, me.draws)), p(scoreOf(op.wins, op.losses, op.draws))],
         ['Белыми', p(scoreOf(me.asWhite.win, me.asWhite.loss, me.asWhite.draw)), p(scoreOf(op.asWhite.win, op.asWhite.loss, op.asWhite.draw))],
         ['Чёрными', p(scoreOf(me.asBlack.win, me.asBlack.loss, me.asBlack.draw)), p(scoreOf(op.asBlack.win, op.asBlack.loss, op.asBlack.draw))],
@@ -1600,6 +1617,12 @@ $('#searchForm').addEventListener('submit', onSubmit);
 document.getElementById('themeToggle').addEventListener('click', () => {
   const current = document.documentElement.getAttribute('data-bs-theme');
   applyTheme(current === 'dark' ? 'light' : 'dark');
+});
+
+document.querySelectorAll('#resultsTabs [data-bs-toggle="tab"]').forEach((btn) => {
+  btn.addEventListener('shown.bs.tab', () => {
+    charts.forEach((c) => { if (c && c.resize) c.resize(); });
+  });
 });
 
 loadHistory();
