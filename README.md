@@ -21,12 +21,13 @@ chess.com (без ключей и авторизации).
 ## Требования
 
 - Доступ в интернет (для открытого API chess.com).
-- Портативный Node.js — папка `runtime/` в репозиторий **не попадает**, скачай её один раз:
+- Node.js — любым способом:
 
-  1. Скачай `https://nodejs.org/dist/latest-v24.x/node-v24.21.0-win-x64.zip`
-  2. Распакуй в `runtime/`, чтобы получился путь `runtime/node-v24.21.0-win-x64/node.exe`.
+  - **Windows**: портативная папка `runtime/node-v24.21.0-win-x64/` (скачай
+    `https://nodejs.org/dist/latest-v24.x/node-v24.21.0-win-x64.zip` и распакуй в `runtime/`).
+  - **macOS/Linux**: `brew install node` (или скачай установщик с nodejs.org).
 
-Либо просто запусти `start.bat` — он сам проверит наличие Node и подскажет, что скачать.
+Папки `runtime/` и `data/` в репозиторий **не попадают** (см. `.gitignore`).
 
 ## Запуск (Windows)
 
@@ -40,6 +41,21 @@ runtime\node-v24.21.0-win-x64\node.exe server.js
 ```
 
 Остановка — `Ctrl+C` в окне сервера. Порт можно поменять: `set PORT=9000` перед запуском.
+
+## Запуск (macOS / Linux)
+
+Сервер и фронтенд кроссплатформенные — нужен только Node.js.
+
+1. Установи Node.js (macOS): `brew install node` (или скачай с nodejs.org).
+2. Запусти:
+
+```
+./start.sh
+```
+
+или вручную: `node server.js`. Открой `http://localhost:8000`.
+
+Остановка — `Ctrl+C`. Порт: `PORT=9000 node server.js`.
 
 ## Структура проекта
 
