@@ -1414,6 +1414,7 @@ async function onSubmit(e) {
 
     lastAnalysis = analysis;
     renderAnalysisSections(analysis);
+    renderRatings(analysis);
     hideStatus();
   } catch (err) {
     hideStatus();

@@ -736,9 +736,9 @@ function recordAnalysis(username, result) {
   return list;
 }
 
-async function getProfile(username) {
+async function getProfile(username, force) {
   const cacheFile = path.join(PLAYERS_DIR, username + '.json');
-  if (fs.existsSync(cacheFile)) {
+  if (!force && fs.existsSync(cacheFile)) {
     try {
       const cached = JSON.parse(fs.readFileSync(cacheFile, 'utf8'));
       if (Date.now() - new Date(cached.fetchedAt).getTime() < PROFILE_TTL_MS) {
@@ -795,7 +795,7 @@ async function analyzePlayer(username, months, refresh) {
     } catch (_) { /* игнор — пересчитаем */ }
   }
 
-  const profile = await getProfile(username);
+  const profile = await getProfile(username, true);
 
   const archivesRes = await fetchJson('https://api.chess.com/pub/player/' + username + '/games/archives');
   const archives = archivesRes.archives || [];
