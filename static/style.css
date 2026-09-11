@@ -1,0 +1,152 @@
+:root {
+  color-scheme: dark;
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface-2: #1c2230;
+  --border: #232a35;
+  --border-strong: #2f3742;
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --accent: #81b64c;      /* фирменный зелёный chess.com */
+  --accent-2: #9ccd62;
+  --win: #3fb950;
+  --loss: #f85149;
+  --draw: #8b949e;
+}
+
+* { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+body {
+  background:
+    radial-gradient(1200px 600px at 85% -10%, rgba(129, 182, 76, 0.07), transparent 60%),
+    radial-gradient(1000px 520px at -10% 15%, rgba(96, 165, 250, 0.06), transparent 55%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  letter-spacing: .1px;
+  min-height: 100vh;
+}
+
+.navbar {
+  background: rgba(13, 17, 23, 0.82) !important;
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+.navbar-brand { font-weight: 700; letter-spacing: .3px; }
+.navbar-brand .accent { color: var(--accent); }
+.navbar-text { color: var(--muted) !important; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .25);
+  transition: border-color .15s ease;
+}
+.card:hover { border-color: var(--border-strong); }
+
+.text-muted { color: var(--muted) !important; }
+
+h1, h2, h3, h4, h5, h6 { font-weight: 600; letter-spacing: -.01em; }
+
+.card-body > h3.h6 {
+  position: relative;
+  padding-left: 12px;
+  color: var(--muted);
+  letter-spacing: .7px;
+  font-weight: 600;
+  font-size: .76rem;
+}
+.card-body > h3.h6::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 14px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+.chart-box { position: relative; height: 320px; }
+
+.avatar {
+  width: 84px;
+  height: 84px;
+  border-radius: 14px;
+  object-fit: cover;
+  border: 1px solid var(--border-strong);
+}
+
+.title-badge { font-weight: 700; }
+
+.stat-big { font-size: 1.9rem; font-weight: 800; line-height: 1.05; letter-spacing: -.02em; }
+.stat-label { font-size: .74rem; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; font-weight: 600; }
+
+.mode-card .mode-name { font-weight: 600; }
+
+.win { color: var(--win); }
+.loss { color: var(--loss); }
+.draw { color: var(--draw); }
+
+.table { --bs-table-bg: transparent; --bs-table-hover-bg: rgba(255, 255, 255, .03); --bs-table-color: var(--text); }
+.table td, .table th { vertical-align: middle; }
+.table-light { --bs-table-bg: var(--surface-2); --bs-table-color: var(--text); }
+
+.list-group-item { background: transparent; border-color: var(--border); }
+
+.form-control, .form-select {
+  background-color: var(--surface-2);
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+.form-control:focus, .form-select:focus {
+  background-color: var(--surface-2);
+  border-color: var(--accent);
+  color: var(--text);
+  box-shadow: 0 0 0 .2rem rgba(129, 182, 76, .15);
+}
+.form-control::placeholder { color: #5c6570; }
+
+.btn-primary {
+  --bs-btn-bg: var(--accent);
+  --bs-btn-border-color: var(--accent);
+  --bs-btn-color: #0d1117;
+  --bs-btn-hover-bg: var(--accent-2);
+  --bs-btn-hover-border-color: var(--accent-2);
+  --bs-btn-hover-color: #0d1117;
+  --bs-btn-active-bg: var(--accent-2);
+  --bs-btn-active-border-color: var(--accent-2);
+  --bs-btn-active-color: #0d1117;
+  font-weight: 600;
+}
+
+.btn-outline-primary {
+  --bs-btn-color: var(--accent-2);
+  --bs-btn-border-color: rgba(156, 205, 98, .4);
+  --bs-btn-hover-bg: rgba(129, 182, 76, .12);
+  --bs-btn-hover-border-color: var(--accent-2);
+  --bs-btn-hover-color: var(--accent-2);
+}
+
+.mini-bar { height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
+.mini-bar > span { display: block; height: 100%; }
+
+.form-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  display: inline-block;
+  flex: 0 0 auto;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08);
+}
+
+#historyChips .btn { border-radius: 999px; padding: .15rem .7rem; }
+
+footer { color: var(--muted); }
+footer code { color: var(--accent-2); }
