@@ -1286,92 +1286,100 @@ function renderCompare(analysis) {
   $('#compareSection').innerHTML = `
     <div class="card shadow-sm">
       <div class="card-body">
-        <h3 class="h6 text-muted text-uppercase mb-3">⚔️ Сравнение с последним соперником</h3>
-        <div class="small text-muted">Загружаем соперника…</div>
+        <h3 class="h6 text-muted text-uppercase mb-2">⚔️ Сравнение с соперниками</h3>
+        <ul class="nav nav-tabs mb-3" role="tablist">
+          <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#cmp-loss" type="button" role="tab">Кому проиграл</button></li>
+          <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#cmp-win" type="button" role="tab">Кого победил</button></li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane fade show active" id="cmp-loss" role="tabpanel"><div class="small text-muted">Загружаем…</div></div>
+          <div class="tab-pane fade" id="cmp-win" role="tabpanel"><div class="small text-muted">Загружаем…</div></div>
+        </div>
       </div>
     </div>`;
 
   fetch('/api/compare?username=' + encodeURIComponent(analysis.username))
     .then((r) => r.json())
     .then((data) => {
-      if (!data.opponent) { $('#compareSection').innerHTML = ''; return; }
       const me = data.user;
-      const op = data.opponent;
-      const ll = data.lastLoss;
-
-      const scoreOf = (w, l, d) => { const t = w + l + d; return t ? ((w + 0.5 * d) / t * 100).toFixed(1) : null; };
-      const p = (v) => (v == null ? '—' : v + '%');
-      const rapidOf = (a) => (a.stats && a.stats.chess_rapid && a.stats.chess_rapid.last && a.stats.chess_rapid.last.rating) || null;
-      const stageOf = (a) => {
-        const bs = a.byStage || {};
-        const names = { opening: 'Дебют', middlegame: 'Миттельшпиль', endgame: 'Эндшпиль' };
-        let best = null, worst = null;
-        for (const k of ['opening', 'middlegame', 'endgame']) {
-          const b = bs[k];
-          if (!b || b.total < 5) continue;
-          const r = parseFloat(scoreOf(b.win, b.loss, b.draw));
-          if (!best || r > best.r) best = { n: names[k], r };
-          if (!worst || r < worst.r) worst = { n: names[k], r };
-        }
-        return { best, worst };
-      };
-      const bestOpening = (a) => {
-        const played = (a.openings || []).filter((o) => o.total >= 5);
-        return played.length ? played.reduce((x, y) => (x.score >= y.score ? x : y)) : null;
-      };
-      const streakTxt = (a) => {
-        const cs = a.currentStreak || {};
-        return cs.type === 'win' ? cs.len + ' побед' : cs.type === 'loss' ? cs.len + ' поражений' : '—';
-      };
-      const joinedOf = (a) => (a.profile && a.profile.joined) || null;
-      const gpmOf = (a) => {
-        const j = joinedOf(a);
-        if (!j || !a.total) return null;
-        const m = (Date.now() / 1000 - j) / (30.44 * 24 * 3600);
-        return m > 0 ? Math.round(a.total / m) : null;
-      };
-
-      const meStage = stageOf(me), opStage = stageOf(op);
-      const meBest = bestOpening(me), opBest = bestOpening(op);
-      const meForm = me.form || {}, opForm = op.form || {};
-
-      const rows = [
-        ['Рейтинг (рапид)', rapidOf(me) != null ? nf.format(rapidOf(me)) : '—', rapidOf(op) != null ? nf.format(rapidOf(op)) : '—'],
-        ['Всего партий', nf.format(me.total), nf.format(op.total)],
-        ['Регистрация', joinedOf(me) ? fmtDate(joinedOf(me)) : '—', joinedOf(op) ? fmtDate(joinedOf(op)) : '—'],
-        ['Партий в месяц', gpmOf(me) != null ? nf.format(gpmOf(me)) : '—', gpmOf(op) != null ? nf.format(gpmOf(op)) : '—'],
-        ['Очки', p(scoreOf(me.wins, me.losses, me.draws)), p(scoreOf(op.wins, op.losses, op.draws))],
-        ['Белыми', p(scoreOf(me.asWhite.win, me.asWhite.loss, me.asWhite.draw)), p(scoreOf(op.asWhite.win, op.asWhite.loss, op.asWhite.draw))],
-        ['Чёрными', p(scoreOf(me.asBlack.win, me.asBlack.loss, me.asBlack.draw)), p(scoreOf(op.asBlack.win, op.asBlack.loss, op.asBlack.draw))],
-        ['Сильнейшая стадия', meStage.best ? meStage.best.n + ' ' + meStage.best.r.toFixed(1) + '%' : '—', opStage.best ? opStage.best.n + ' ' + opStage.best.r.toFixed(1) + '%' : '—'],
-        ['Слабейшая стадия', meStage.worst ? meStage.worst.n + ' ' + meStage.worst.r.toFixed(1) + '%' : '—', opStage.worst ? opStage.worst.n + ' ' + opStage.worst.r.toFixed(1) + '%' : '—'],
-        ['Лучший дебют', meBest ? esc(meBest.name) : '—', opBest ? esc(opBest.name) : '—'],
-        ['Форма (посл. 20)', meForm.winRate != null ? meForm.winRate + '%' : '—', opForm.winRate != null ? opForm.winRate + '%' : '—'],
-        ['Серия', streakTxt(me), streakTxt(op)]
-      ];
-
-      const rowsHtml = rows.map((r) => `
-        <tr>
-          <td class="text-muted">${r[0]}</td>
-          <td class="text-end fw-semibold">${r[1]}</td>
-          <td class="text-end">${r[2]}</td>
-        </tr>`).join('');
-
-      $('#compareSection').innerHTML = `
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h3 class="h6 text-muted text-uppercase mb-1">⚔️ Сравнение с последним соперником</h3>
-            <p class="small text-muted mb-3">Ты против <strong>${esc(ll.opponent)}</strong> — последний, кому проиграл${ll.date ? ' (' + fmtDateShort(ll.date) + ')' : ''}${ll.opening ? ' · ' + esc(ll.opening) : ''}.</p>
-            <div class="table-responsive">
-              <table class="table table-sm align-middle mb-0">
-                <thead class="table-light"><tr><th>Показатель</th><th class="text-end">Ты</th><th class="text-end">${esc(ll.opponent)}</th></tr></thead>
-                <tbody>${rowsHtml}</tbody>
-              </table>
-            </div>
-          </div>
-        </div>`;
+      const lossPane = document.getElementById('cmp-loss');
+      const winPane = document.getElementById('cmp-win');
+      if (lossPane) lossPane.innerHTML = data.loss ? compareTableHtml(me, data.loss.opponent, data.loss.game) : '<div class="text-muted small">Нет поражений.</div>';
+      if (winPane) winPane.innerHTML = data.win ? compareTableHtml(me, data.win.opponent, data.win.game) : '<div class="text-muted small">Нет побед.</div>';
     })
     .catch(() => { $('#compareSection').innerHTML = ''; });
+}
+
+function compareTableHtml(me, op, game) {
+  const scoreOf = (w, l, d) => { const t = w + l + d; return t ? ((w + 0.5 * d) / t * 100).toFixed(1) : null; };
+  const p = (v) => (v == null ? '—' : v + '%');
+  const rapidOf = (a) => (a.stats && a.stats.chess_rapid && a.stats.chess_rapid.last && a.stats.chess_rapid.last.rating) || null;
+  const stageOf = (a) => {
+    const bs = a.byStage || {};
+    const names = { opening: 'Дебют', middlegame: 'Миттельшпиль', endgame: 'Эндшпиль' };
+    let best = null, worst = null;
+    for (const k of ['opening', 'middlegame', 'endgame']) {
+      const b = bs[k];
+      if (!b || b.total < 5) continue;
+      const r = parseFloat(scoreOf(b.win, b.loss, b.draw));
+      if (!best || r > best.r) best = { n: names[k], r };
+      if (!worst || r < worst.r) worst = { n: names[k], r };
+    }
+    return { best, worst };
+  };
+  const bestOpening = (a) => {
+    const played = (a.openings || []).filter((o) => o.total >= 5);
+    return played.length ? played.reduce((x, y) => (x.score >= y.score ? x : y)) : null;
+  };
+  const streakTxt = (a) => {
+    const cs = a.currentStreak || {};
+    return cs.type === 'win' ? cs.len + ' побед' : cs.type === 'loss' ? cs.len + ' поражений' : '—';
+  };
+  const joinedOf = (a) => (a.profile && a.profile.joined) || null;
+  const gpmOf = (a) => {
+    const j = joinedOf(a);
+    if (!j || !a.total) return null;
+    const m = (Date.now() / 1000 - j) / (30.44 * 24 * 3600);
+    return m > 0 ? Math.round(a.total / m) : null;
+  };
+
+  const meStage = stageOf(me), opStage = stageOf(op);
+  const meBest = bestOpening(me), opBest = bestOpening(op);
+  const meForm = me.form || {}, opForm = op.form || {};
+
+  const rows = [
+    ['Рейтинг (рапид)', rapidOf(me) != null ? nf.format(rapidOf(me)) : '—', rapidOf(op) != null ? nf.format(rapidOf(op)) : '—'],
+    ['Всего партий', nf.format(me.total), nf.format(op.total)],
+    ['Регистрация', joinedOf(me) ? fmtDate(joinedOf(me)) : '—', joinedOf(op) ? fmtDate(joinedOf(op)) : '—'],
+    ['Партий в месяц', gpmOf(me) != null ? nf.format(gpmOf(me)) : '—', gpmOf(op) != null ? nf.format(gpmOf(op)) : '—'],
+    ['Очки', p(scoreOf(me.wins, me.losses, me.draws)), p(scoreOf(op.wins, op.losses, op.draws))],
+    ['Белыми', p(scoreOf(me.asWhite.win, me.asWhite.loss, me.asWhite.draw)), p(scoreOf(op.asWhite.win, op.asWhite.loss, op.asWhite.draw))],
+    ['Чёрными', p(scoreOf(me.asBlack.win, me.asBlack.loss, me.asBlack.draw)), p(scoreOf(op.asBlack.win, op.asBlack.loss, op.asBlack.draw))],
+    ['Сильнейшая стадия', meStage.best ? meStage.best.n + ' ' + meStage.best.r.toFixed(1) + '%' : '—', opStage.best ? opStage.best.n + ' ' + opStage.best.r.toFixed(1) + '%' : '—'],
+    ['Слабейшая стадия', meStage.worst ? meStage.worst.n + ' ' + meStage.worst.r.toFixed(1) + '%' : '—', opStage.worst ? opStage.worst.n + ' ' + opStage.worst.r.toFixed(1) + '%' : '—'],
+    ['Лучший дебют', meBest ? esc(meBest.name) : '—', opBest ? esc(opBest.name) : '—'],
+    ['Форма (посл. 20)', meForm.winRate != null ? meForm.winRate + '%' : '—', opForm.winRate != null ? opForm.winRate + '%' : '—'],
+    ['Серия', streakTxt(me), streakTxt(op)]
+  ];
+
+  const rowsHtml = rows.map((r) => `
+    <tr>
+      <td class="text-muted">${r[0]}</td>
+      <td class="text-end fw-semibold">${r[1]}</td>
+      <td class="text-end">${r[2]}</td>
+    </tr>`).join('');
+
+  const oppName = game ? game.opponent : 'Соперник';
+  const sub = game ? 'vs <strong>' + esc(game.opponent) + '</strong>' + (game.date ? ' (' + fmtDateShort(game.date) + ')' : '') + (game.opening ? ' · ' + esc(game.opening) : '') : '';
+
+  return `
+    <p class="small text-muted mb-2">${sub}</p>
+    <div class="table-responsive">
+      <table class="table table-sm align-middle mb-0">
+        <thead class="table-light"><tr><th>Показатель</th><th class="text-end">Ты</th><th class="text-end">${esc(oppName)}</th></tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    </div>`;
 }
 
 function esc(s) {

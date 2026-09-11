@@ -28,7 +28,7 @@ const PROFILE_TTL_MS = 6 * 60 * 60 * 1000;   // 6 часов (профиль/р�
 const MAX_ARCHIVE_MONTHS = 300;              // потолок для "вся история"
 // Кэш игр НЕ сбрасывается по времени — живёт, пока не запросят refresh=1 (не трогаем API без нужды)
 const FETCH_DELAY_MS = 250;                  // пауза между архивами (вежливость к API)
-const SCHEMA_VERSION = 8;                    // версия схемы JSON-кэша игр (менять при изменении структуры)
+const SCHEMA_VERSION = 9;                    // версия схемы JSON-кэша игр (менять при изменении структуры)
 
 for (const d of [DATA_DIR, PLAYERS_DIR, GAMES_DIR, OPPONENTS_DIR, OPPONENTS_FORM_DIR]) {
   fs.mkdirSync(d, { recursive: true });
@@ -528,6 +528,16 @@ function aggregate(games, username) {
     }
   }
 
+  // последний соперник, которого победил
+  let lastWin = null;
+  for (let i = a.meta.length - 1; i >= 0; i--) {
+    const m = a.meta[i];
+    if (m.outcome === 'win') {
+      lastWin = { date: m.date, opponent: m.opponent, opening: m.opening, eco: m.eco, rating: m.rating, oppRating: m.oppRating, url: m.url, side: m.side };
+      break;
+    }
+  }
+
   // сколько партий подряд за день — устаёшь ли (win-rate по номеру партии в дне)
   const dayGames = {};
   for (const m of a.meta) {
@@ -604,7 +614,8 @@ function aggregate(games, username) {
     bestGames,
     byGameOfDay,
     byHour,
-    lastLoss
+    lastLoss,
+    lastWin
   };
 }
 
@@ -931,12 +942,21 @@ async function handleApi(parsed, res) {
     }
     let userData;
     try { userData = JSON.parse(fs.readFileSync(userFile, 'utf8')); } catch (_) { return sendJson(res, { error: 'Кэш повреждён' }, 500); }
-    const lastLoss = userData.lastLoss;
-    if (!lastLoss || !lastLoss.opponent) {
-      return sendJson(res, { error: 'Не найдено поражений' }, 404);
+
+    const lossGame = userData.lastLoss;
+    const winGame = userData.lastWin;
+
+    let loss = null, win = null;
+    if (lossGame && lossGame.opponent) {
+      const opponent = await analyzePlayer(lossGame.opponent, 'all', false);
+      loss = { game: lossGame, opponent };
     }
-    const opponent = await analyzePlayer(lastLoss.opponent, 'all', false);
-    return sendJson(res, { user: userData, opponent, lastLoss });
+    if (winGame && winGame.opponent) {
+      const opponent = await analyzePlayer(winGame.opponent, 'all', false);
+      win = { game: winGame, opponent };
+    }
+
+    return sendJson(res, { user: userData, loss, win });
   }
 
   if (pathname === '/api/player' || pathname === '/api/analyze') {
