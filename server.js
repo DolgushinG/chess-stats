@@ -760,6 +760,24 @@ async function getProfile(username) {
   return obj;
 }
 
+// Проверка: не появилась ли у игрока новая партия с момента кэширования.
+// Дешёвый запрос текущих партий — сравниваем самую свежую игру с кэшем.
+async function hasNewGames(username, cached) {
+  try {
+    const archRes = await fetchJson('https://api.chess.com/pub/player/' + username + '/games/archives');
+    const archives = archRes.archives || [];
+    if (!archives.length) return false;
+    const res = await fetchJson(archives[archives.length - 1]);
+    const games = (res.games || []).sort((a, b) => (b.end_time || 0) - (a.end_time || 0));
+    if (!games.length) return false;
+    const latestUrl = games[0].url || '';
+    const cachedLatest = (cached.recentGames && cached.recentGames[0] && cached.recentGames[0].url) || '';
+    return !!(latestUrl && cachedLatest && latestUrl !== cachedLatest);
+  } catch (_) {
+    return false; // не смогли проверить — используем кэш как есть
+  }
+}
+
 async function analyzePlayer(username, months, refresh) {
   username = String(username || '').toLowerCase();
   const cacheFile = path.join(GAMES_DIR, username + '.json');
@@ -771,7 +789,8 @@ async function analyzePlayer(username, months, refresh) {
       const asked = months === 'all' ? Infinity : (parseInt(months, 10) || 12);
       const coveredEnough = covered >= asked || (allAvailable > 0 && covered >= allAvailable);
       if (coveredEnough && cached.schemaVersion === SCHEMA_VERSION) {
-        return cached;
+        const fresh = await hasNewGames(username, cached);
+        if (!fresh) return cached;
       }
     } catch (_) { /* игнор — пересчитаем */ }
   }
